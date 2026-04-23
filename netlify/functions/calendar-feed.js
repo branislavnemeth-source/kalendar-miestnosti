@@ -17,7 +17,12 @@ const ROOMS = [
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
     const mod = url.startsWith('https') ? https : http;
-    const req = mod.get(url, { headers: { 'User-Agent': 'NetlifyFunction/1.0' } }, (res) => {
+    const options = {
+      headers: { 'User-Agent': 'NetlifyFunction/1.0' },
+      rejectUnauthorized: false
+    };
+    
+    const req = mod.get(url, options, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => resolve(data));
@@ -30,54 +35,58 @@ function fetchUrl(url) {
 function parseIcal(icalText, room) {
   const events = [];
   const blocks = icalText.split('BEGIN:VEVENT');
+  
   for (let i = 1; i < blocks.length; i++) {
     const block = blocks[i];
     const get = (key) => {
-      const r = new RegExp(key + '[^:]*:([^\r\n]+)', 'i');
+      const r = new RegExp(key + '[^:]*:([^\\r\\n]+)', 'i');
       const m = block.match(r);
       return m ? m[1].trim() : '';
     };
-    const parseDate = (s) => {
-      if (!s) return null;
-      s = s.replace(/[^\dT]/g, '');
-      if (s.length === 8) return new Date(s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8)+'T00:00:00');
-      return new Date(s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8)+'T'+s.slice(9,11)+':'+s.slice(11,13)+':'+s.slice(13,15));
-    };
-    const summary = get('SUMMARY').replace(/\\,/g,',').replace(/\\n/g,' ');
-    const start = parseDate(get('DTSTART'));
-    const end = parseDate(get('DTEND'));
-    const location = get('LOCATION').replace(/\\,/g,',');
-    const description = get('DESCRIPTION').replace(/\\,/g,',').replace(/\\n/g,' ');
-    if (summary && start) {
+    
+    const summary = get('SUMMARY');
+    const dtstart = get('DTSTART');
+    const dtend = get('DTEND');
+    
+    if (summary && dtstart) {
       events.push({
-        summary, start: start.toISOString(), end: end ? end.toISOString() : start.toISOString(),
-        location, description, room: room.name, color: room.color, roomUrl: room.url
+        title: summary,
+        start: dtstart,
+        end: dtend || dtstart,
+        room: room.name,
+        color: room.color
       });
     }
   }
   return events;
 }
 
-exports.handler = async function(event, context) {
+exports.handler = async (event, context) => {
   const allEvents = [];
   const errors = [];
-  await Promise.all(ROOMS.map(async (room) => {
+  
+  for (const room of ROOMS) {
     try {
-      const ical = await fetchUrl(room.url);
-      const evs = parseIcal(ical, room);
-      allEvents.push(...evs);
-    } catch(e) {
-      errors.push({ room: room.name, error: e.message });
+      const icalData = await fetchUrl(room.url);
+      const events = parseIcal(icalData, room);
+      allEvents.push(...events);
+    } catch (error) {
+      errors.push({ room: room.name, error: error.message });
     }
-  }));
-  allEvents.sort((a,b) => new Date(a.start) - new Date(b.start));
+  }
+  
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'public, max-age=300'
+      'Access-Control-Allow-Origin': '*'
     },
-    body: JSON.stringify({ ok: true, events: allEvents, errors, count: allEvents.length, updated: new Date().toISOString() })
+    body: JSON.stringify({
+      ok: true,
+      events: allEvents,
+      errors: errors,
+      count: allEvents.length,
+      updated: new Date().toISOString()
+    })
   };
 };
