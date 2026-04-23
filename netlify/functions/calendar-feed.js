@@ -1,5 +1,6 @@
 const https = require('https');
 const http = require('http');
+const { URL } = require('url');
 
 const ROOMS = [
   { name: 'Aula', url: 'https://booking.tnuni.sk/calendar/ical.php?resourceid=4&token=8462d30ef53e30eb393dc43b913f1f4321227b3a1e8499320097c7d6540d5e57', color: '#f59e0b' },
@@ -14,21 +15,29 @@ const ROOMS = [
   { name: 'Zasadačka FŠT', url: 'https://booking.tnuni.sk/calendar/ical.php?resourceid=10&token=cfc8b6904dc6125ba4013a5c1d75903161d816e85f8263ed35b95d1db4258ec5', color: '#be185d' }
 ];
 
-function fetchUrl(url) {
+function fetchUrl(urlString) {
   return new Promise((resolve, reject) => {
-    const mod = url.startsWith('https') ? https : http;
+    const urlObj = new URL(urlString);
+    const mod = urlObj.protocol === 'https:' ? https : http;
+    
     const options = {
+      hostname: urlObj.hostname,
+      port: urlObj.port,
+      path: urlObj.pathname + urlObj.search,
+      method: 'GET',
       headers: { 'User-Agent': 'NetlifyFunction/1.0' },
       rejectUnauthorized: false
     };
     
-    const req = mod.get(url, options, (res) => {
+    const req = mod.request(options, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => resolve(data));
     });
+    
     req.on('error', reject);
     req.setTimeout(10000, () => { req.destroy(); reject(new Error('Timeout')); });
+    req.end();
   });
 }
 
