@@ -73,13 +73,35 @@ function parseIcal(icalText, room) {
 exports.handler = async (event, context) => {
   const allEvents = [];
   const errors = [];
+  const debug = [];
   
   for (const room of ROOMS) {
+    const debugInfo = {
+      room: room.name,
+      url: room.url,
+      status: 'pending'
+    };
+    
     try {
+      debug.push({ ...debugInfo, status: 'fetching' });
       const icalData = await fetchUrl(room.url);
+      
+      debugInfo.dataLength = icalData.length;
+      debugInfo.firstChars = icalData.substring(0, 100);
+      debugInfo.status = 'parsing';
+      debug.push({ ...debugInfo });
+      
       const events = parseIcal(icalData, room);
+      debugInfo.eventsFound = events.length;
+      debugInfo.status = 'success';
+      debug.push({ ...debugInfo });
+      
       allEvents.push(...events);
     } catch (error) {
+      debugInfo.status = 'error';
+      debugInfo.errorMessage = error.message;
+      debugInfo.errorStack = error.stack;
+      debug.push({ ...debugInfo });
       errors.push({ room: room.name, error: error.message });
     }
   }
@@ -94,6 +116,7 @@ exports.handler = async (event, context) => {
       ok: true,
       events: allEvents,
       errors: errors,
+      debug: debug,
       count: allEvents.length,
       updated: new Date().toISOString()
     })
