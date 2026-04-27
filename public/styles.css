@@ -1,0 +1,93 @@
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #1f2933;
+  --muted: #5b6b7c;
+  --border: #e3e8ef;
+  --accent: #1e88e5;
+  --shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 6px 16px rgba(15, 23, 42, .06);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar h1 { margin: 0; font-size: 1.25rem; }
+.subtitle { margin: .15rem 0 0; color: var(--muted); font-size: .85rem; }
+
+.status { display: flex; align-items: center; gap: .5rem; font-size: .85rem; color: var(--muted); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; display: inline-block; }
+.dot.ok { background: #22c55e; box-shadow: 0 0 0 4px rgba(34, 197, 94, .15); }
+.dot.warn { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245, 158, 11, .15); }
+.dot.err { background: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, .15); }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem .8rem;
+  padding: .65rem 1.25rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  font-size: .8rem;
+}
+.legend label { display: inline-flex; align-items: center; gap: .35rem; cursor: pointer; user-select: none; }
+.legend .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.legend input { margin: 0; }
+
+main { padding: 1rem 1.25rem 4rem; }
+
+#calendar {
+  background: var(--card);
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  min-height: 70vh;
+}
+
+.fc .fc-toolbar-title { font-size: 1.1rem; }
+.fc .fc-button { background: var(--accent); border-color: var(--accent); }
+.fc .fc-button:hover, .fc .fc-button-primary:not(:disabled).fc-button-active { background: #1565c0; border-color: #1565c0; }
+
+/* Vlastný obsah udalosti */
+.ev-content { font-size: .78rem; line-height: 1.2; padding: 2px 4px; overflow: hidden; }
+.ev-content .ev-room { font-weight: 700; }
+.ev-content .ev-title { font-weight: 500; }
+.ev-content .ev-contact { opacity: .85; }
+
+footer { text-align: center; padding: 1rem; color: var(--muted); font-size: .8rem; }
+footer a { color: inherit; }
+
+/* Modal */
+.modal { position: fixed; inset: 0; background: rgba(15, 23, 42, .5); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 1000; }
+.modal.hidden { display: none; }
+.modal-card { position: relative; background: var(--card); border-radius: 12px; padding: 1.5rem 1.5rem 1.25rem; max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+.modal-card h2 { margin: .25rem 0 1rem; font-size: 1.15rem; }
+.modal-card .close { position: absolute; top: .35rem; right: .55rem; background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); }
+.modal-card dl { display: grid; grid-template-columns: 110px 1fr; gap: .35rem .75rem; margin: 0; font-size: .9rem; }
+.modal-card dt { color: var(--muted); }
+.modal-card dd { margin: 0; }
+.modal-card .desc { margin-top: .9rem; padding-top: .9rem; border-top: 1px solid var(--border); white-space: pre-wrap; font-size: .85rem; color: var(--muted); }
+.ev-color { width: 32px; height: 6px; border-radius: 3px; margin-bottom: .5rem; }
+
+@media (max-width: 720px) {
+  .topbar { flex-direction: column; align-items: flex-start; }
+  main { padding: .5rem; }
+  #calendar { padding: .5rem; }
+  .fc .fc-toolbar { flex-direction: column; gap: .5rem; }
+}

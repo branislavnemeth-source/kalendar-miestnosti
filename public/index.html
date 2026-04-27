@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8" />
+  <title>Spoločný kalendár miestností — TnUNI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Spoločný rezervačný kalendár všetkých miestností Trenčianskej univerzity." />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">
+      <h1>Spoločný kalendár miestností</h1>
+      <p class="subtitle">Trenčianska univerzita Alexandra Dubčeka — rezervácie všetkých priestorov v jednom prehľade</p>
+    </div>
+    <div class="status">
+      <span id="syncDot" class="dot"></span>
+      <span id="syncText">Načítavam…</span>
+    </div>
+  </header>
+
+  <aside class="legend" id="legend"></aside>
+
+  <main>
+    <div id="calendar"></div>
+  </main>
+
+  <!-- Modal s detailom udalosti -->
+  <div id="eventModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="evTitle">
+    <div class="modal-card">
+      <button class="close" aria-label="Zavrieť" onclick="closeModal()">×</button>
+      <div class="ev-color" id="evColor"></div>
+      <h2 id="evTitle"></h2>
+      <dl>
+        <dt>Miestnosť</dt><dd id="evRoom"></dd>
+        <dt>Kedy</dt><dd id="evWhen"></dd>
+        <dt>Kontakt</dt><dd id="evContact"></dd>
+      </dl>
+      <p id="evDesc" class="desc"></p>
+    </div>
+  </div>
+
+  <footer>
+    <small>Údaje pochádzajú z <a href="https://booking.tnuni.sk" target="_blank" rel="noopener">booking.tnuni.sk</a>. Synchronizácia každých 5 minút.</small>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales/sk.global.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
