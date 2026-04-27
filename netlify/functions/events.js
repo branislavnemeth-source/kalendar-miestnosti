@@ -36,6 +36,23 @@ function fetchIcs(url) {
   });
 }
 
+// Vytiahne telefónne číslo z popisu rezervácie.
+// V description býva napr.: "Telefón: +421 915 434 658\nÚčasť CIT: Nie\n..."
+// Akceptujeme rôzne varianty: 'Telefón', 'Telefon', 'Tel', 'Phone', 'Mobil'.
+function extractPhone(desc) {
+  if (!desc) return '';
+  const m = desc.match(/(?:Telef[oó]n|Tel\.?|Phone|Mobil)\s*[:\-]?\s*([+0-9 \-()\/]{6,})/i);
+  if (!m) return '';
+  // očistíme: necháme +, číslice, medzery a pomlčky
+  return m[1].replace(/[^\d+\-\s]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+// Pre tel: link odstránime všetko okrem + a číslic
+function phoneToTelHref(phone) {
+  if (!phone) return '';
+  return phone.replace(/[^\d+]/g, '');
+}
+
 // Z parsovaného udalosti vytvorí FullCalendar event
 function toFcEvent(ev, source) {
   if (!ev.start || !ev.end) return null;
@@ -53,6 +70,8 @@ function toFcEvent(ev, source) {
       contactEmail = val.replace(/^mailto:/i, '');
     }
   }
+  const description = (ev.description || '').toString().trim();
+  const contactPhone = extractPhone(description);
   return {
     id: `${source.room}::${ev.uid || summary}::${ev.start.toISOString()}`,
     title: summary || '(bez názvu)',
@@ -66,7 +85,8 @@ function toFcEvent(ev, source) {
       location: location || source.room,
       contactName,
       contactEmail,
-      description: (ev.description || '').toString().trim()
+      contactPhone,
+      description
     }
   };
 }

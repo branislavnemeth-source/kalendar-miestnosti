@@ -95,15 +95,20 @@ async function loadEvents() {
 function eventContent(arg) {
   const room = arg.event.extendedProps.room || '';
   const contact = arg.event.extendedProps.contactName || arg.event.extendedProps.contactEmail || '';
+  const phone = arg.event.extendedProps.contactPhone || '';
   const isList = arg.view.type === 'listMonth' || arg.view.type === 'listWeek' || arg.view.type === 'listDay';
   if (isList) {
-    return { html: `<span class="ev-room">${escapeHtml(room)}</span> — <span class="ev-title">${escapeHtml(arg.event.title)}</span>${contact ? ` <span class="ev-contact">· ${escapeHtml(contact)}</span>` : ''}` };
+    return { html: `<span class="ev-room">${escapeHtml(room)}</span> — <span class="ev-title">${escapeHtml(arg.event.title)}</span>${contact ? ` <span class="ev-contact">· ${escapeHtml(contact)}</span>` : ''}${phone ? ` <span class="ev-contact">· ${escapeHtml(phone)}</span>` : ''}` };
   }
+  const tooltipParts = [room, arg.event.title];
+  if (contact) tooltipParts.push(contact);
+  if (phone) tooltipParts.push(phone);
   return { html: `
-    <div class="ev-content" title="${escapeHtml(room)} — ${escapeHtml(arg.event.title)}${contact ? ' · ' + escapeHtml(contact) : ''}">
+    <div class="ev-content" title="${escapeHtml(tooltipParts.join(' — '))}">
       <div class="ev-room">${escapeHtml(room)}</div>
       <div class="ev-title">${escapeHtml(arg.event.title)}</div>
       ${contact ? `<div class="ev-contact">${escapeHtml(contact)}</div>` : ''}
+      ${phone ? `<div class="ev-contact">${escapeHtml(phone)}</div>` : ''}
     </div>` };
 }
 
@@ -118,12 +123,20 @@ function openModal(ev) {
   $('evWhen').textContent = fmtRange(ev.start, ev.end);
   const name = ev.extendedProps.contactName || '';
   const email = ev.extendedProps.contactEmail || '';
+  const phone = ev.extendedProps.contactPhone || '';
   const c = $('evContact');
   c.innerHTML = '';
   if (!name && !email) c.textContent = '—';
   else if (email) {
     c.innerHTML = `${escapeHtml(name)}${name ? ' ' : ''}<a href="mailto:${encodeURIComponent(email)}">${escapeHtml(email)}</a>`;
   } else c.textContent = name;
+  const p = $('evPhone');
+  if (phone) {
+    const href = phone.replace(/[^\d+]/g, '');
+    p.innerHTML = `<a href="tel:${escapeHtml(href)}">${escapeHtml(phone)}</a>`;
+  } else {
+    p.textContent = '—';
+  }
   $('evDesc').textContent = ev.extendedProps.description || '';
   $('eventModal').classList.remove('hidden');
 }
